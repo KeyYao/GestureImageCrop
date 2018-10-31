@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/ImageCropActivity.qml</file>
+        <file>qml/PhotoAlbumListActivity.qml</file>
+        <file>qml/PhotoFileListActivity.qml</file>
+        <file>qml/WelcomeActivity.qml</file>
+        <file>qml/widget/GestureCropView.qml</file>
+        <file>qml/widget/TopBar.qml</file>
+        <file>res/ic_back_black.png</file>
+        <file>res/ic_done_black.png</file>
+    </qresource>
+</RCC>
