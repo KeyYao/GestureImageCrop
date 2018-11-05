@@ -17,6 +17,7 @@
 * Android
 * Ndk r16b
 * Gradle 3.4
+* Xcode 9.4
 
 ## Screenshot
 ![screenshot](https://github.com/KeyYao/GestureImageCrop/blob/master/screenshot/screenshot.gif)
