@@ -10,7 +10,7 @@
 
 ## Platforms
 - [x] Android
-- [ ] iOS
+- [x] iOS
 
 ## Build
 * Qt5.9.4

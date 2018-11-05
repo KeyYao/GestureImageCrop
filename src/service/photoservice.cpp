@@ -13,6 +13,9 @@
 #include <QAndroidJniObject>
 #include <jni.h>
 #endif
+#ifdef Q_OS_IOS
+#include "../utils/iosassetutils.h"
+#endif
 
 PhotoService::PhotoService(QObject *parent) : QObject(parent)
 {
@@ -25,6 +28,10 @@ QList<QObject*> PhotoService::loadAlbumList()
 #ifdef Q_OS_ANDROID
     QAndroidJniObject albumList = QAndroidJniObject::callStaticObjectMethod("moe/key/yao/gestureimagecrop/utils/MediaUtils", "getAlbumList", "()Ljava/lang/String;");
     json = albumList.toString();
+#endif
+#ifdef Q_OS_IOS
+    IOSAssetUtils utils;
+    json = utils.getAssetCollectionList();
 #endif
     
     QList<QObject*> data;
@@ -55,6 +62,10 @@ QList<QObject*> PhotoService::loadFileList(QString identifier)
     QAndroidJniObject identifierObj = QAndroidJniObject::fromString(identifier);
     QAndroidJniObject fileList = QAndroidJniObject::callStaticObjectMethod("moe/key/yao/gestureimagecrop/utils/MediaUtils", "getPhotoFileList", "(Ljava/lang/String;)Ljava/lang/String;", identifierObj.object<jstring>());
     json = fileList.toString();
+#endif
+#ifdef Q_OS_IOS
+    IOSAssetUtils utils;
+    json = utils.getAssetList(identifier);
 #endif
     
     QList<QObject*> data;

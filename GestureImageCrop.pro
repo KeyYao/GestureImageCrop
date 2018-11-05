@@ -18,7 +18,10 @@ SOURCES += src/main.cpp \
     src/service/photoservice.cpp \
     src/entry/fileentry.cpp \
     src/utils/utils.cpp \
-    src/task/loadimagedatathread.cpp
+    src/task/loadimagedatathread.cpp \
+    src/widget/imagethumbnailview.cpp \
+    src/task/imagethumbnailloader.cpp \
+    src/task/loadimagethumbnailthread.cpp
 
 HEADERS += \
     src/widget/photoview.h \
@@ -26,7 +29,10 @@ HEADERS += \
     src/service/photoservice.h \
     src/entry/fileentry.h \
     src/utils/utils.h \
-    src/task/loadimagedatathread.h
+    src/task/loadimagedatathread.h \
+    src/widget/imagethumbnailview.h \
+    src/task/imagethumbnailloader.h \
+    src/task/loadimagethumbnailthread.h
 
 RESOURCES += qml.qrc
 
@@ -57,6 +63,15 @@ android {
 }
 
 ios {
+    SOURCES += \
+        src/utils/iosassetutils.mm
+
+    HEADERS += \
+        src/utils/iosassetutils.h
+
+    DISTFILES += \
+        ios/Info.plist
+
     LIBS += -framework UIKit
 
     QMAKE_LFLAGS    += -framework OpenGLES
@@ -66,6 +81,8 @@ ios {
     QMAKE_LFLAGS    += -framework Photos
     QMAKE_LFLAGS    += -framework PhotosUI
     QMAKE_LFLAGS    += -framework CoreGraphics
+
+    QMAKE_INFO_PLIST = $$PWD/ios/Info.plist
 }
 
 DISTFILES += \

@@ -4,17 +4,17 @@ import QtQuick.Layouts 1.3
 
 Rectangle {
     
-    readonly property var rootView: StackView.view
+    readonly property var stackView: StackView.view
     
     color: "white"
     
     Button {
-        width: 400
-        height: 100
+        width: parent.width * 0.5
+        height: parent.height * 0.1
         anchors.centerIn: parent
         text: qsTr("选择图片")
         onClicked: {
-            rootView.push("qrc:/qml/PhotoAlbumListActivity.qml")
+            stackView.push("qrc:/qml/PhotoAlbumListActivity.qml")
         }
     }
     

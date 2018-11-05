@@ -8,7 +8,7 @@ Rectangle {
         cropView.source = path
     }
     
-    readonly property var rootView: StackView.view
+    readonly property var stackView: StackView.view
     property string path: ""
     
     color: "white"
@@ -18,7 +18,7 @@ Rectangle {
         title: qsTr("裁剪")
         rightIcon: "qrc:/res/ic_done_black.png"
         onBack: {
-            rootView.pop()
+            stackView.pop()
         }
         onRightClick: {
             cropView.crop()

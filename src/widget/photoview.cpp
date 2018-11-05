@@ -193,6 +193,7 @@ void PhotoView::crop()
     QImage resultImage = srcImage.copy(QRect(x * scale, y * scale, _cropWidth * scale, _cropHeight * scale));
     if (!resultImage.isNull()) {
         QString savePath = QString("%1/%2.png").arg(Utils::getImageSavePath()).arg(QDateTime::currentDateTime().toMSecsSinceEpoch());
+        qDebug() << "crop result image save path:" << savePath;
         bool flag = resultImage.save(savePath, "png", 70);
         if (flag) {
             emit signal_cropSuccess(savePath);

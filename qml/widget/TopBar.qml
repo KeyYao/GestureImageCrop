@@ -6,20 +6,21 @@ Rectangle {
     property string title: ""
     property string rightIcon: ""
     
+    id: rootView
     width: parent.width
-    height: 140
+    height: parent.height * 0.075
     color: "white"
     
     signal back()
     signal rightClick()
     
     Rectangle {
-        width: 100
+        width: parent.width * 0.094
         height: parent.height
         anchors.left: parent.left
         Image {
-            width: 55
-            height: 55
+            width: rootView.width * 0.05
+            height: width
             anchors.centerIn: parent
             source: "qrc:/res/ic_back_black.png"
         }
@@ -33,13 +34,13 @@ Rectangle {
     }
     
     Rectangle {
-        width: 100
+        width: parent.width * 0.094
         height: parent.height
         anchors.right: parent.right
         visible: rightIcon != ""
         Image {
-            width: 55
-            height: 55
+            width: rootView.width * 0.05
+            height: width
             anchors.centerIn: parent
             source: rightIcon
         }

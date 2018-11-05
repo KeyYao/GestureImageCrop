@@ -2,6 +2,7 @@ import QtQuick 2.9
 import QtQuick.Controls 2.2
 import "./widget"
 import PhotoService 1.0
+import ImageThumbnailView 1.0
 
 Rectangle {
     
@@ -13,16 +14,17 @@ Rectangle {
         id: service
     }
     
-    readonly property var rootView: StackView.view
+    readonly property var stackView: StackView.view
     property string identifier: ""
     
+    id: rootView
     color: "white"
     
     TopBar {
         id: topbar
         title: qsTr("图片")
         onBack: {
-            rootView.pop()
+            stackView.pop()
         }
     }
     
@@ -40,25 +42,22 @@ Rectangle {
         
         Rectangle {
             width: parent.width
-            height: 200
+            height: rootView.height * 0.1
             color: "white"
             
-            Image {
+            ImageThumbnailView {
                 id: img
-                width: 160
-                height: 160
+                height: rootView.height * 0.09
+                width: height
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
-                anchors.leftMargin: 100
-                source: "file://" + model.modelData.path
-                sourceSize.width: 100
-                sourceSize.height: 100
-                fillMode: Image.PreserveAspectCrop
+                anchors.leftMargin: rootView.width * 0.08
+                source: model.modelData.path
             }
             
             Label {
                 anchors.left: img.right
-                anchors.leftMargin: 200
+                anchors.leftMargin: rootView.width * 0.18
                 anchors.verticalCenter: parent.verticalCenter
                 font.pointSize: 14
                 color: "black"
@@ -75,7 +74,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    rootView.push("qrc:/qml/ImageCropActivity.qml", {"path":model.modelData.path})
+                    stackView.push("qrc:/qml/ImageCropActivity.qml", {"path":model.modelData.path})
                 }
             }
             
