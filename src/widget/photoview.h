@@ -34,6 +34,8 @@ public:
 private:
     double _maxScale;
     
+    QString _path;
+    
     QImage _sourceImage;
     QRectF _drawImageRect;
     
@@ -54,12 +56,16 @@ private:
     void initCropArea();
     
 signals:
+    void signal_loadingStarted();
+    void signal_loadingEnded();
+    
     void signal_cropAreaInited();
     void signal_cropSuccess(QString path);
     
     void maxScaleChanged();
     
 public slots:
+    void slot_loadImageDataDone(QString path, QImage image);
 };
 
 #endif // PHOTOVIEW_H

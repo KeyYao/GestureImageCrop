@@ -20,6 +20,13 @@ Rectangle {
     PhotoView {
         id: photoView
         anchors.fill: parent
+        onSignal_loadingStarted: {
+            loadingView.startAnimation()
+            
+        }
+        onSignal_loadingEnded: {
+            loadingView.stopAnimation()
+        }
         onSignal_cropAreaInited: {
             photoView.setSrc(source)
         }
@@ -67,6 +74,17 @@ Rectangle {
             
         }
         
+    }
+    
+    LoadingView {
+        id: loadingView
+        width: 50
+        height: 50
+        petalCount: 12
+        petalWidth: 3
+        petalLength: width / 6
+        petalColor: "#ffffff"
+        anchors.centerIn: parent
     }
     
 }

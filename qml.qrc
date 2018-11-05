@@ -9,5 +9,6 @@
         <file>qml/widget/TopBar.qml</file>
         <file>res/ic_back_black.png</file>
         <file>res/ic_done_black.png</file>
+        <file>qml/widget/LoadingView.qml</file>
     </qresource>
 </RCC>

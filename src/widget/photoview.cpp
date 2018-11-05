@@ -6,6 +6,7 @@
 #include <QDateTime>
 
 #include "../utils/utils.h"
+#include "../task/loadimagedatathread.h"
 
 PhotoView::PhotoView(QQuickItem *parent) : QQuickPaintedItem(parent)
 {
@@ -44,39 +45,18 @@ void PhotoView::initCropArea()
 
 void PhotoView::setSrc(QString path)
 {
-    QImage image;
-    bool result = image.load(path);
-    qWarning() << "image load result:" << result;
-    
-    if (!result) {
+    if (path.compare(_path) == 0) {
         return;
     }
     
-    if (image.width() > image.height()) {
-        _sourceImage = image.scaledToHeight(_cropHeight, Qt::SmoothTransformation);
-    } else {
-        _sourceImage = image.scaledToWidth(_cropWidth, Qt::SmoothTransformation);
-    }
+    emit signal_loadingStarted();
     
-    int drawImageX = 0;
-    int drawImageY = 0;
-    int drawImageWidth = _sourceImage.width();
-    int drawImageHeight = _sourceImage.height();
+    _path = path;
     
-    if (drawImageWidth > _cropWidth) {
-        drawImageX = _cropLeft - (drawImageWidth - _cropWidth) / 2;
-    } else {
-        drawImageX = _cropLeft;
-    }
-    if (drawImageHeight > _cropHeight) {
-        drawImageY = _cropTop - (drawImageHeight - _cropHeight) / 2;
-    } else {
-        drawImageY = _cropTop;
-    }
-    
-    _drawImageRect = QRectF(drawImageX, drawImageY, drawImageWidth, drawImageHeight);
-    
-    this->update();
+    LoadImageDataThread *thread = new LoadImageDataThread(_path, this);
+    connect(thread, SIGNAL(signal_done(QString,QImage)), SLOT(slot_loadImageDataDone(QString,QImage)));
+    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    thread->start();
 }
 
 void PhotoView::moveBegan()
@@ -137,12 +117,22 @@ void PhotoView::scaleUpdate(float scale)
     int afterX = sourceX;
     int afterY = sourceY;
     
-    if (afterWidth > _sourceImage.width() * _maxScale) {
-        afterWidth = _sourceImage.width() * _maxScale;
-        afterHeight = _sourceImage.height() * _maxScale;
-    } else if (afterWidth < _sourceImage.width()) {
-        afterWidth = _sourceImage.width();
-        afterHeight = _sourceImage.height();
+    if (_sourceImage.width() < _sourceImage.height()) {
+        if (afterWidth > _cropWidth * _maxScale) {
+            afterWidth = _cropWidth * _maxScale;
+            afterHeight = ((double)(_cropWidth * _maxScale) / (double)_sourceImage.width()) * _sourceImage.height();
+        } else if (afterWidth < _cropWidth) {
+            afterWidth = _cropWidth;
+            afterHeight = ((double)_cropWidth / (double)_sourceImage.width()) * _sourceImage.height();
+        }
+    } else {
+        if (afterHeight > _cropHeight * _maxScale) {
+            afterHeight = _cropHeight * _maxScale;
+            afterWidth = ((double)(_cropHeight * _maxScale) / (double)_sourceImage.height()) * _sourceImage.width();
+        } else if (afterHeight < _cropHeight) {
+            afterHeight = _cropHeight;
+            afterWidth = ((double)_cropHeight / (double)_sourceImage.height()) * _sourceImage.width();
+        }
     }
     
     if (_scaleCenterPoint.x() < _cropLeft) {
@@ -190,17 +180,17 @@ void PhotoView::scaleEnded()
 
 void PhotoView::crop()
 {
-    QImage srcImage;
-    if (_scaleResultImage.isNull()) {
-        srcImage = _sourceImage;
-    } else {
-        srcImage = _scaleResultImage;
+    if (_sourceImage.isNull()) {
+        return;
     }
+    
+    QImage srcImage = _sourceImage;
+    double scale = (double)_sourceImage.width() / (double)_scaleResultImage.width();
     
     int x = _cropLeft - _drawImageRect.x();
     int y = _cropTop - _drawImageRect.y();
     
-    QImage resultImage = srcImage.copy(QRect(x, y, _cropWidth, _cropHeight));
+    QImage resultImage = srcImage.copy(QRect(x * scale, y * scale, _cropWidth * scale, _cropHeight * scale));
     if (!resultImage.isNull()) {
         QString savePath = QString("%1/%2.png").arg(Utils::getImageSavePath()).arg(QDateTime::currentDateTime().toMSecsSinceEpoch());
         bool flag = resultImage.save(savePath, "png", 70);
@@ -223,30 +213,22 @@ void PhotoView::paint(QPainter *painter)
     painter->fillRect(mainRect, QBrush(Qt::black));
 
     // ==== draw image
-    if (_sourceImage.isNull()) {
-        return;
+    if (!_sourceImage.isNull()) {
+        QImage drawImage = _scaleResultImage;
+        painter->drawImage(_drawImageRect, drawImage);
+        
+        // ==== draw shadow
+        QBrush shadowBursh(QColor(0, 0, 0, 128));
+        QRectF topRect = QRectF(0, 0, mainRect.width(), _cropTop);
+        QRectF leftRect = QRectF(0, _cropTop, _cropLeft, mainRect.height() - _cropTop);
+        QRectF rightRect = QRectF(_cropRight, _cropTop, mainRect.width() - _cropRight, mainRect.height() - _cropTop);
+        QRectF bottomRect = QRectF(_cropLeft, _cropBottom, _cropWidth, mainRect.height() - _cropBottom);
+        
+        painter->fillRect(topRect, shadowBursh);
+        painter->fillRect(leftRect, shadowBursh);
+        painter->fillRect(rightRect, shadowBursh);
+        painter->fillRect(bottomRect, shadowBursh);
     }
-
-    QImage drawImage;
-    if (_scaleResultImage.isNull()) {
-        drawImage = _sourceImage;
-    } else {
-        drawImage = _scaleResultImage;
-    }
-    painter->drawImage(_drawImageRect, drawImage);
-
-    
-    // ==== draw shadow
-    QBrush shadowBursh(QColor(0, 0, 0, 128));
-    QRectF topRect = QRectF(0, 0, mainRect.width(), _cropTop);
-    QRectF leftRect = QRectF(0, _cropTop, _cropLeft, mainRect.height() - _cropTop);
-    QRectF rightRect = QRectF(_cropRight, _cropTop, mainRect.width() - _cropRight, mainRect.height() - _cropTop);
-    QRectF bottomRect = QRectF(_cropLeft, _cropBottom, _cropWidth, mainRect.height() - _cropBottom);
-    
-    painter->fillRect(topRect, shadowBursh);
-    painter->fillRect(leftRect, shadowBursh);
-    painter->fillRect(rightRect, shadowBursh);
-    painter->fillRect(bottomRect, shadowBursh);
     
     // ==== draw line
     painter->setPen(QPen(QColor("#ffffff"), 2));
@@ -263,6 +245,47 @@ void PhotoView::paint(QPainter *painter)
     painter->drawLine(QPointF(_cropLeft + oneThirdWidth, _cropTop), QPointF(_cropLeft + oneThirdWidth, _cropBottom));
     painter->drawLine(QPointF(_cropLeft + oneThirdWidth * 2, _cropTop), QPointF(_cropLeft + oneThirdWidth * 2, _cropBottom));
     
+}
+
+void PhotoView::slot_loadImageDataDone(QString path, QImage image)
+{
+    emit signal_loadingEnded();
+    
+    if (_path.compare(path) != 0) {
+        return;
+    }
+    
+    if (image.isNull()) {
+        return;
+    }
+    
+    _sourceImage = image;
+    
+    if (image.width() > image.height()) {
+        _scaleResultImage = image.scaledToHeight(_cropHeight, Qt::SmoothTransformation);
+    } else {
+        _scaleResultImage = image.scaledToWidth(_cropWidth, Qt::SmoothTransformation);
+    }
+    
+    int drawImageX = 0;
+    int drawImageY = 0;
+    int drawImageWidth = _scaleResultImage.width();
+    int drawImageHeight = _scaleResultImage.height();
+    
+    if (drawImageWidth > _cropWidth) {
+        drawImageX = _cropLeft - (drawImageWidth - _cropWidth) / 2;
+    } else {
+        drawImageX = _cropLeft;
+    }
+    if (drawImageHeight > _cropHeight) {
+        drawImageY = _cropTop - (drawImageHeight - _cropHeight) / 2;
+    } else {
+        drawImageY = _cropTop;
+    }
+    
+    _drawImageRect = QRectF(drawImageX, drawImageY, drawImageWidth, drawImageHeight);
+    
+    this->update();
 }
 
 double PhotoView::maxScale() const

@@ -17,14 +17,16 @@ SOURCES += src/main.cpp \
     src/entry/albumentry.cpp \
     src/service/photoservice.cpp \
     src/entry/fileentry.cpp \
-    src/utils/utils.cpp
+    src/utils/utils.cpp \
+    src/task/loadimagedatathread.cpp
 
 HEADERS += \
     src/widget/photoview.h \
     src/entry/albumentry.h \
     src/service/photoservice.h \
     src/entry/fileentry.h \
-    src/utils/utils.h
+    src/utils/utils.h \
+    src/task/loadimagedatathread.h
 
 RESOURCES += qml.qrc
 
